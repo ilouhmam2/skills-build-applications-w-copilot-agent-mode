@@ -1,4 +1,27 @@
 {
+  // VS Code launch configuration to run Django dev server using the project's venv
+  // and expose an env var to control Codespace URL scheme.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django: Runserver (venv)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/octofit-tracker/backend/manage.py",
+      "args": ["runserver", "0.0.0.0:8000"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/octofit-tracker/backend",
+      "env": {
+        // Use https by default; set to http if you need to avoid TLS during testing
+        "CODESPACE_API_SCHEME": "https"
+      },
+      // If you want to use the workspace venv automatically, set the pythonPath
+      // in your user/workspace settings or select the interpreter in the VS Code UI.
+      "justMyCode": true
+    }
+  ]
+}
+{
   "version": "0.2.0",
   "configurations": [
     {

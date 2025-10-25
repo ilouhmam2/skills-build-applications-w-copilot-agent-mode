@@ -15,7 +15,47 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.http import JsonResponse
+from django.views.generic.base import RedirectView
+import os
+
+
+def api_root(request):
+    """Return API base endpoints using the Codespace hostname when available.
+
+    This constructs absolute URLs like:
+      https://$CODESPACE_NAME-8000.app.github.dev/api/activities/
+
+    - If the env var CODESPACE_NAME is present, we use the app.github.dev URL
+      so the frontend can point to the Codespace-hosted backend without
+      hard-coding values.
+    - Otherwise we fall back to the current request host/scheme.
+    """
+    codespace = os.environ.get('CODESPACE_NAME')
+    # Allow overriding the scheme used for Codespace URLs. Default to https.
+    scheme = os.environ.get('CODESPACE_API_SCHEME', 'https')
+    if codespace:
+        base = f"{scheme}://{codespace}-8000.app.github.dev"
+    else:
+        # Use the incoming request host/scheme as a safe fallback
+        scheme = request.scheme
+        host = request.get_host()
+        base = f"{scheme}://{host}"
+
+    # Components exposed by the API. Keep these in sync with your app's endpoints.
+    endpoints = {
+        'activities': f"{base}/api/activities/",
+        'users': f"{base}/api/users/",
+        'teams': f"{base}/api/teams/",
+        'leaderboard': f"{base}/api/leaderboard/",
+        'workouts': f"{base}/api/workouts/",
+    }
+    return JsonResponse(endpoints)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Redirect root URL to the API root so a visit to `/` returns the API mapping
+    path('', RedirectView.as_view(url='/api/', permanent=False)),
+    path('api/', api_root, name='api-root'),
 ]
